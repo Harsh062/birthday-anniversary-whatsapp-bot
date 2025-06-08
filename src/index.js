@@ -7,7 +7,7 @@ const { logToFile } = require("./utils/logger");
 async function main() {
     try {
         logToFile("Starting to send birthday messages...", "INFO");
-        //await sendBirthdayMessages();
+        await sendBirthdayMessages();
 
         logToFile("Starting to send anniversary messages...", "INFO");
         await sendAnniversaryMessages();
