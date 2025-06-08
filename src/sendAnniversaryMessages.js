@@ -1,39 +1,43 @@
 const axios = require("axios");
 const loadCsv = require("./utils/loadCsv");
-const { filterTodayBirthdays } = require("./utils/birthdayFilter");
+const { filterTodayAnniversaries } = require("./utils/anniversaryFilter");
 const { logToFile } = require("./utils/logger");
 
 function extractFirstName(fullName) {
     return fullName.trim().split(" ")[0];
 }
 
-async function sendBirthdayMessages() {
+async function sendAnniversaryMessages() {
     if (!process.env.RECIPIENT_PHONE_NUMBER) {
         const error = "RECIPIENT_PHONE_NUMBER environment variable is not set";
         logToFile(error, "ERROR");
         throw new Error(error);
     }
 
-    if (!process.env.BIRTHDAY_TEMPLATE_NAME) {
-        const error = "BIRTHDAY_TEMPLATE_NAME environment variable is not set";
+    if (!process.env.ANNIVERSARY_TEMPLATE_NAME) {
+        const error = "ANNIVERSARY_TEMPLATE_NAME environment variable is not set";
         logToFile(error, "ERROR");
         throw new Error(error);
     }
 
-    const rows = await loadCsv('birthday');
-    const todayBirthdays = filterTodayBirthdays(rows);
-    if (todayBirthdays.length === 0) {
-        logToFile("No birthdays found today", "INFO");
+    const rows = await loadCsv('anniversary');
+    const todayAnniversaries = filterTodayAnniversaries(rows);
+    if (todayAnniversaries.length === 0) {
+        logToFile("No anniversaries found today", "INFO");
         return;
     }
+    logToFile(`Found ${todayAnniversaries.length} anniversaries today`, "INFO");
 
-    logToFile(`Found ${todayBirthdays.length} birthdays today`, "INFO");
-
-    for (const row of todayBirthdays) {
-        const fullName = row["Full Name"];
-        const firstName = extractFirstName(fullName);
-        const jiName = `${firstName}ji`;
-        const imageUrl = row["Image Link"] || row["Photo Link"];
+    for (const couple of todayAnniversaries) {
+        const husbandName = couple.husband["Full Name"];
+        const wifeName = couple.wife["Full Name"];
+        const husbandFirstName = extractFirstName(husbandName);
+        const wifeFirstName = extractFirstName(wifeName);
+        const husbandPhone = couple.husband["Phone Number"];
+        const wifePhone = couple.wife["Phone Number"];
+        const imageUrl = couple.husband["Image Link"] || couple.wife["Image Link"] || couple.husband["Photo Link"] || couple.wife["Photo Link"];
+        console.log(imageUrl);
+        console.log(couple);
 
         try {
             const res = await axios.post(
@@ -43,7 +47,7 @@ async function sendBirthdayMessages() {
                     to: process.env.RECIPIENT_PHONE_NUMBER,
                     type: "template",
                     template: {
-                        name: process.env.BIRTHDAY_TEMPLATE_NAME,
+                        name: process.env.ANNIVERSARY_TEMPLATE_NAME,
                         language: { code: "hi" },
                         components: [
                             {
@@ -58,9 +62,9 @@ async function sendBirthdayMessages() {
                             {
                                 type: "body",
                                 parameters: [
-                                    { type: "text", text: fullName },
-                                    { type: "text", text: jiName },
-                                    { type: "text", text: row["Phone Number"] },
+                                    { type: "text", text: `${husbandFirstName}ji` },
+                                    { type: "text", text: `${wifeFirstName}ji` },
+                                    { type: "text", text: `${husbandName} & ${wifeName} ${husbandPhone} ${wifePhone}` },
                                 ],
                             },
                         ],
@@ -74,12 +78,12 @@ async function sendBirthdayMessages() {
                 }
             );
 
-            logToFile(`Message sent for ${fullName} to ${process.env.RECIPIENT_PHONE_NUMBER} - Message ID: ${res.data.messages?.[0]?.id}`, "SUCCESS");
+            logToFile(`Anniversary message sent for ${husbandName} & ${wifeName} to ${process.env.RECIPIENT_PHONE_NUMBER} - Message ID: ${res.data.messages?.[0]?.id}`, "SUCCESS");
         } catch (err) {
-            const errorMessage = `Failed to send message for ${fullName}: ${err?.response?.data?.error?.message || err.message}`;
+            const errorMessage = `Failed to send anniversary message for ${husbandName} & ${wifeName}: ${err?.response?.data?.error?.message || err.message}`;
             logToFile(errorMessage, "ERROR");
         }
     }
 }
 
-module.exports = sendBirthdayMessages;
+module.exports = sendAnniversaryMessages; 
