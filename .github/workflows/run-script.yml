@@ -1,0 +1,41 @@
+name: Daily Birthday and Anniversary Messages
+
+on:
+  schedule:
+    - cron: '30 1 * * *' # Runs every day at 7:00 AM IST (1:30 AM UTC)
+  workflow_dispatch: # Allows manual triggering for testing
+
+jobs:
+  send_messages:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run script
+        run: node src/index.js
+        env:
+          # WhatsApp Configuration
+          WHATSAPP_API_URL: ${{ secrets.WHATSAPP_API_URL }}
+          WHATSAPP_ACCESS_TOKEN: ${{ secrets.WHATSAPP_ACCESS_TOKEN }}
+          RECIPIENT_PHONE_NUMBER: ${{ secrets.RECIPIENT_PHONE_NUMBER }}
+          
+          # Template Names
+          BIRTHDAY_TEMPLATE_NAME: ${{ secrets.BIRTHDAY_TEMPLATE_NAME }}
+          ANNIVERSARY_TEMPLATE_NAME: ${{ secrets.ANNIVERSARY_TEMPLATE_NAME }}
+          
+          # CSV Remote Links
+          BIRTHDAY_CSV_REMOTE_LINK: ${{ secrets.BIRTHDAY_CSV_REMOTE_LINK }}
+          ANNIVERSARY_CSV_REMOTE_LINK: ${{ secrets.ANNIVERSARY_CSV_REMOTE_LINK }}
+          
+          # Environment
+          NODE_ENV: 'production'

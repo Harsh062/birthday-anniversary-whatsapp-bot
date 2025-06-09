@@ -35,9 +35,6 @@ async function sendAnniversaryMessages() {
         const wifeFirstName = extractFirstName(wifeName);
         const husbandPhone = couple.husband["Phone Number"];
         const wifePhone = couple.wife["Phone Number"];
-        const imageUrl = couple.husband["Image Link"] || couple.wife["Image Link"] || couple.husband["Photo Link"] || couple.wife["Photo Link"];
-        console.log(imageUrl);
-        console.log(couple);
 
         try {
             const res = await axios.post(
@@ -50,15 +47,6 @@ async function sendAnniversaryMessages() {
                         name: process.env.ANNIVERSARY_TEMPLATE_NAME,
                         language: { code: "hi" },
                         components: [
-                            {
-                                type: "header",
-                                parameters: [
-                                    {
-                                        type: "image",
-                                        image: { link: imageUrl },
-                                    },
-                                ],
-                            },
                             {
                                 type: "body",
                                 parameters: [

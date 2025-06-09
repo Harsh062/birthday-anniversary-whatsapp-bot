@@ -32,8 +32,7 @@ async function sendBirthdayMessages() {
     for (const row of todayBirthdays) {
         const fullName = row["Full Name"];
         const firstName = extractFirstName(fullName);
-        const jiName = `${firstName}ji`;
-        const imageUrl = row["Image Link"] || row["Photo Link"];
+        const jiNameWithPhone = `${firstName}ji : ${row["Phone Number"]}`;
 
         try {
             const res = await axios.post(
@@ -47,20 +46,10 @@ async function sendBirthdayMessages() {
                         language: { code: "hi" },
                         components: [
                             {
-                                type: "header",
-                                parameters: [
-                                    {
-                                        type: "image",
-                                        image: { link: imageUrl },
-                                    },
-                                ],
-                            },
-                            {
                                 type: "body",
                                 parameters: [
                                     { type: "text", text: fullName },
-                                    { type: "text", text: jiName },
-                                    { type: "text", text: row["Phone Number"] },
+                                    { type: "text", text: jiNameWithPhone }
                                 ],
                             },
                         ],
