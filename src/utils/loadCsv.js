@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const { logToFile } = require('./logger');
+const { Readable } = require('stream');
 
 async function readLocalCSV(filePath) {
     return new Promise((resolve, reject) => {
@@ -18,15 +19,17 @@ async function readLocalCSV(filePath) {
 async function readRemoteCSV(url) {
     try {
         const response = await axios.get(url);
-        const rows = response.data.split('\n');
-        const headers = rows[0].split(',');
+        const results = [];
 
-        return rows.slice(1).map(row => {
-            const values = row.split(',');
-            return headers.reduce((obj, header, index) => {
-                obj[header.trim()] = values[index]?.trim() || '';
-                return obj;
-            }, {});
+        // Create a readable stream from the response data
+        const readableStream = Readable.from(response.data);
+
+        return new Promise((resolve, reject) => {
+            readableStream
+                .pipe(csv())
+                .on('data', (data) => results.push(data))
+                .on('end', () => resolve(results))
+                .on('error', (error) => reject(error));
         });
     } catch (error) {
         throw new Error(`Failed to fetch remote CSV: ${error.message}`);
