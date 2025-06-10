@@ -8,6 +8,7 @@ on:
 jobs:
   send_messages:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout repo
