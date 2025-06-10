@@ -4,7 +4,6 @@ function isAnniversaryToday(date) {
     if (!date) return false;
 
     const match = date.match(/^(\d{1,2})-(\w+)-/);
-    console.log(date, match);
     if (!match) return false;
 
     const today = getTodayInIST();
@@ -15,7 +14,6 @@ function isAnniversaryToday(date) {
 }
 
 function pairCouples(rows) {
-    console.log("pairing couples");
     const couples = new Map(); // Using anniversaryDate as key to group couples
     const processedIndices = new Set();
 
