@@ -67,7 +67,7 @@ async function loadCsv(type = 'birthday') {
             if (!fileConfig.remoteLink) {
                 throw new Error(`${fileConfig.name.toUpperCase()}_CSV_REMOTE_LINK not set in production environment`);
             }
-            logToFile(`Fetching remote ${fileConfig.name} CSV from: ${fileConfig.remoteLink}`, 'INFO');
+            logToFile(`Fetching remote ${fileConfig.name} CSV data`, 'INFO');
             return await readRemoteCSV(fileConfig.remoteLink);
         }
     } catch (error) {

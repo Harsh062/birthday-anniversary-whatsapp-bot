@@ -66,10 +66,16 @@ async function sendAnniversaryMessages() {
                 }
             );
 
-            logToFile(`Anniversary message sent for ${husbandName} & ${wifeName} to ${process.env.RECIPIENT_PHONE_NUMBER} - Message ID: ${res.data.messages?.[0]?.id}`, "SUCCESS");
+            logToFile(`Anniversary message sent for ${husbandName} & ${wifeName} (Message ID: ${res.data.messages?.[0]?.id})`, "SUCCESS");
         } catch (err) {
-            const errorMessage = `Failed to send anniversary message for ${husbandName} & ${wifeName}: ${err?.response?.data?.error?.message || err.message}`;
-            logToFile(errorMessage, "ERROR");
+            const errorMessage = `Failed to send anniversary message for ${husbandName} & ${wifeName}`;
+            // Sanitize error message to remove any sensitive data
+            const sanitizedError = err?.response?.data?.error?.message || err.message;
+            if (sanitizedError) {
+                logToFile(`${errorMessage}: ${sanitizedError.replace(/Bearer \w+/g, 'Bearer [REDACTED]')}`, "ERROR");
+            } else {
+                logToFile(errorMessage, "ERROR");
+            }
         }
     }
 }
