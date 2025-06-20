@@ -30,9 +30,17 @@ jobs:
           WHATSAPP_ACCESS_TOKEN: ${{ secrets.WHATSAPP_ACCESS_TOKEN }}
           RECIPIENT_PHONE_NUMBER: ${{ secrets.RECIPIENT_PHONE_NUMBER }}
           
-          # Template Names
+          # Old Template Names
           BIRTHDAY_TEMPLATE_NAME: ${{ secrets.BIRTHDAY_TEMPLATE_NAME }}
           ANNIVERSARY_TEMPLATE_NAME: ${{ secrets.ANNIVERSARY_TEMPLATE_NAME }}
+
+          # New Birthday Template Names
+          BIRTHDAY_TEMPLATE_WITH_IMAGE: ${{ secrets.BIRTHDAY_TEMPLATE_WITH_IMAGE }}
+          BIRTHDAY_TEMPLATE_NO_IMAGE: ${{ secrets.BIRTHDAY_TEMPLATE_NO_IMAGE }}
+
+          # New Anniversary Template Names
+          ANNIVERSARY_TEMPLATE_WITH_IMAGE: ${{ secrets.ANNIVERSARY_TEMPLATE_WITH_IMAGE }}
+          ANNIVERSARY_TEMPLATE_NO_IMAGE: ${{ secrets.ANNIVERSARY_TEMPLATE_NO_IMAGE }}
           
           # CSV Remote Links
           BIRTHDAY_CSV_REMOTE_LINK: ${{ secrets.BIRTHDAY_CSV_REMOTE_LINK }}
