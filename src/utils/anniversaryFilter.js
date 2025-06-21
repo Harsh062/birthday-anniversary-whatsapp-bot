@@ -14,36 +14,56 @@ function isAnniversaryToday(date) {
 }
 
 function pairCouples(rows) {
-    const couples = new Map(); // Using anniversaryDate as key to group couples
+    const couples = new Map(); // Using unique couple identifier as key
     const processedIndices = new Set();
 
+    // First pass: collect all valid anniversary entries for today
+    const todayEntries = [];
     for (let i = 0; i < rows.length; i++) {
-        if (processedIndices.has(i)) continue;
-
         const currentRow = rows[i];
         const anniversaryDate = currentRow["Anniversary Date"];
         const relationship = currentRow["Relationship with HOF"];
 
         if (!anniversaryDate || !isAnniversaryToday(anniversaryDate) || !relationship) continue;
 
-        if (!couples.has(anniversaryDate)) {
-            couples.set(anniversaryDate, {});
-        }
-
-        const couple = couples.get(anniversaryDate);
-
-        if (relationship.toLowerCase() === "husband") {
-            couple.husband = currentRow;
-        } else if (relationship.toLowerCase() === "wife") {
-            couple.wife = currentRow;
-        }
-
-        processedIndices.add(i);
+        todayEntries.push({ row: currentRow, index: i });
     }
 
-    // Filter only complete couples (both husband and wife found)
-    return Array.from(couples.values())
-        .filter(couple => couple.husband && couple.wife);
+    // Group entries by anniversary date
+    const entriesByDate = new Map();
+    for (const entry of todayEntries) {
+        const anniversaryDate = entry.row["Anniversary Date"];
+        if (!entriesByDate.has(anniversaryDate)) {
+            entriesByDate.set(anniversaryDate, []);
+        }
+        entriesByDate.get(anniversaryDate).push(entry);
+    }
+
+    // For each anniversary date, pair couples
+    for (const [anniversaryDate, entries] of entriesByDate) {
+        const husbands = entries.filter(e => e.row["Relationship with HOF"].toLowerCase() === "husband");
+        const wives = entries.filter(e => e.row["Relationship with HOF"].toLowerCase() === "wife");
+
+        // Create couples by matching husbands and wives
+        for (let i = 0; i < Math.min(husbands.length, wives.length); i++) {
+            const husband = husbands[i];
+            const wife = wives[i];
+
+            // Create unique couple identifier
+            const coupleKey = `${anniversaryDate}-couple-${i}`;
+
+            couples.set(coupleKey, {
+                husband: husband.row,
+                wife: wife.row
+            });
+
+            processedIndices.add(husband.index);
+            processedIndices.add(wife.index);
+        }
+    }
+
+    // Return all complete couples
+    return Array.from(couples.values());
 }
 
 function filterTodayAnniversaries(rows) {
