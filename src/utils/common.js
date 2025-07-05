@@ -20,6 +20,30 @@ function isValidImageUrl(url) {
     }
 }
 
+/**
+ * Checks if a URL is a valid Google Drive share URL
+ * @param {string} url - The URL to validate
+ * @returns {boolean} - True if valid Google Drive URL, false otherwise
+ */
+function isValidGoogleDriveUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    const trimmedUrl = url.trim();
+    if (trimmedUrl === '') return false;
+
+    try {
+        const urlObj = new URL(trimmedUrl);
+        if (urlObj.hostname !== 'drive.google.com') return false;
+
+        // Check for common Google Drive URL patterns
+        return trimmedUrl.includes('/file/d/') ||
+            trimmedUrl.includes('?id=') ||
+            trimmedUrl.includes('&id=');
+    } catch {
+        return false;
+    }
+}
+
 module.exports = {
-    isValidImageUrl
+    isValidImageUrl,
+    isValidGoogleDriveUrl
 }; 
