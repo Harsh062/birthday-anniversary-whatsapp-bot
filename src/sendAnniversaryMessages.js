@@ -118,7 +118,7 @@ async function sendAnniversaryMessages() {
 
             const templateType = hasValidImage ? "with image" : "without image";
             const imageSource = finalImageUrl === husbandImageLink || finalImageUrl === wifeImageLink ? "existing" : "Cloudinary";
-            logToFile(`Anniversary message sent for ${husbandName} & ${wifeName} using ${templateType} template (${imageSource} image) - Message ID: ${res.data.messages?.[0]?.id}`, "SUCCESS");
+            logToFile(`Anniversary message sent for ${husbandName} & ${wifeName} to ${process.env.RECIPIENT_PHONE_NUMBER} using ${templateType} template - Message ID: ${res.data.messages?.[0]?.id}`, "SUCCESS");
         } catch (err) {
             const errorMessage = `Failed to send anniversary message for ${husbandName} & ${wifeName}`;
             // Sanitize error message to remove any sensitive data
