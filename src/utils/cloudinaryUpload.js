@@ -117,18 +117,6 @@ function uploadToCloudinary(imageBuffer, fileName) {
  */
 async function uploadFromGoogleDrive(driveUrl, fileName = null) {
     try {
-
-        if (!process.env.CLOUDINARY_CLOUD_NAME) {
-            logToFile('Cloudinary cloud name not configured', 'ERROR');
-        }
-
-        if (!process.env.CLOUDINARY_API_KEY) {
-            logToFile('Cloudinary API key not configured', 'ERROR');
-        }
-
-        if (!process.env.CLOUDINARY_API_SECRET) {
-            logToFile('Cloudinary API secret not configured', 'ERROR');
-        }
         // Validate Cloudinary configuration
         if (!process.env.CLOUDINARY_CLOUD_NAME ||
             !process.env.CLOUDINARY_API_KEY ||

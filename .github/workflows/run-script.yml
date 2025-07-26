@@ -40,6 +40,11 @@ jobs:
           # CSV Remote Links
           BIRTHDAY_CSV_REMOTE_LINK: ${{ secrets.BIRTHDAY_CSV_REMOTE_LINK }}
           ANNIVERSARY_CSV_REMOTE_LINK: ${{ secrets.ANNIVERSARY_CSV_REMOTE_LINK }}
-          
+
+          # Cloudinary Configuration
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+
           # Environment
           NODE_ENV: 'production'
