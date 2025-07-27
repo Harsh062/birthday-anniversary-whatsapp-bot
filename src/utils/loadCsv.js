@@ -36,42 +36,30 @@ async function readRemoteCSV(url) {
     }
 }
 
-async function loadCsv(type = 'birthday') {
+async function loadCsv() {
     const isDev = process.env.NODE_ENV === 'development';
     const config = {
-        birthday: {
-            localPath: process.env.BIRTHDAY_LOCAL_CSV_PATH,
-            remoteLink: process.env.BIRTHDAY_CSV_REMOTE_LINK,
-            name: 'birthday'
-        },
-        anniversary: {
-            localPath: process.env.ANNIVERSARY_LOCAL_CSV_PATH,
-            remoteLink: process.env.ANNIVERSARY_CSV_REMOTE_LINK,
-            name: 'anniversary'
-        }
+        localPath: process.env.BIRTHDAY_ANNIVERSARY_LOCAL_CSV_PATH,
+        remoteLink: process.env.BIRTHDAY_ANNIVERSARY_CSV_REMOTE_LINK,
+        name: 'birthday_anniversary'
     };
-
-    const fileConfig = config[type];
-    if (!fileConfig) {
-        throw new Error(`Invalid CSV type: ${type}`);
-    }
 
     try {
         if (isDev) {
-            if (!fileConfig.localPath) {
-                throw new Error(`${fileConfig.name.toUpperCase()}_LOCAL_CSV_PATH not set in development environment`);
+            if (!config.localPath) {
+                throw new Error('BIRTHDAY_ANNIVERSARY_LOCAL_CSV_PATH not set in development environment');
             }
-            logToFile(`Reading local ${fileConfig.name} CSV from: ${fileConfig.localPath}`, 'INFO');
-            return await readLocalCSV(fileConfig.localPath);
+            logToFile(`Reading local ${config.name} CSV from: ${config.localPath}`, 'INFO');
+            return await readLocalCSV(config.localPath);
         } else {
-            if (!fileConfig.remoteLink) {
-                throw new Error(`${fileConfig.name.toUpperCase()}_CSV_REMOTE_LINK not set in production environment`);
+            if (!config.remoteLink) {
+                throw new Error('BIRTHDAY_ANNIVERSARY_CSV_REMOTE_LINK not set in production environment');
             }
-            logToFile(`Fetching remote ${fileConfig.name} CSV data`, 'INFO');
-            return await readRemoteCSV(fileConfig.remoteLink);
+            logToFile(`Fetching remote ${config.name} CSV data`, 'INFO');
+            return await readRemoteCSV(config.remoteLink);
         }
     } catch (error) {
-        logToFile(`Failed to load ${fileConfig.name} CSV: ${error.message}`, 'ERROR');
+        logToFile(`Failed to load ${config.name} CSV: ${error.message}`, 'ERROR');
         throw error;
     }
 }

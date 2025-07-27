@@ -1,6 +1,6 @@
 const axios = require("axios");
 const loadCsv = require("./utils/loadCsv");
-const { filterTodayAnniversaries } = require("./utils/anniversaryFilter");
+const { filterTodayAnniversaries } = require("./utils/unifiedFilter");
 const { logToFile } = require("./utils/logger");
 const { isValidImageUrl, isValidGoogleDriveUrl } = require("./utils/common");
 const { uploadFromGoogleDrive } = require("./utils/cloudinaryUpload");
@@ -28,7 +28,7 @@ async function sendAnniversaryMessages() {
         throw new Error(error);
     }
 
-    const rows = await loadCsv('anniversary');
+    const rows = await loadCsv();
     const todayAnniversaries = filterTodayAnniversaries(rows);
     if (todayAnniversaries.length === 0) {
         logToFile("No anniversaries found today", "INFO");
@@ -37,31 +37,35 @@ async function sendAnniversaryMessages() {
     logToFile(`Found ${todayAnniversaries.length} anniversaries today`, "INFO");
 
     for (const couple of todayAnniversaries) {
-        const husbandName = couple.husband["Full Name"];
-        const wifeName = couple.wife["Full Name"];
+        const husbandName = couple.husbandName;
+        const wifeName = couple.wifeName;
         const husbandFirstName = extractFirstName(husbandName);
         const wifeFirstName = extractFirstName(wifeName);
-        const husbandPhone = couple.husband["Phone Number"];
-        const wifePhone = couple.wife["Phone Number"];
-        const husbandPhotoLink = couple.husband["Photo Link"];
-        const wifePhotoLink = couple.wife["Photo Link"];
-        const husbandImageLink = couple.husband["Image Link"];
-        const wifeImageLink = couple.wife["Image Link"];
+        const husbandPhone = couple.husbandPhone;
+        const wifePhone = couple.wifePhone;
+        const anniversaryPhoto = couple.anniversaryPhoto;
 
         let finalImageUrl = null;
 
-        // Check for Google Drive URLs in Photo Link columns and upload to Cloudinary if needed
-        const husbandPhotoUrl = isValidGoogleDriveUrl(husbandPhotoLink) && (!husbandImageLink || !isValidImageUrl(husbandImageLink))
-            ? await processGoogleDriveUpload(husbandPhotoLink, husbandName, couple.husband, "husband")
-            : husbandImageLink;
+        // Check if Anniversary Photo contains a Google Drive URL and needs to be uploaded to Cloudinary
+        if (isValidGoogleDriveUrl(anniversaryPhoto)) {
+            logToFile(`Processing Google Drive URL for anniversary ${husbandName} & ${wifeName}: ${anniversaryPhoto}`, "INFO");
 
-        const wifePhotoUrl = isValidGoogleDriveUrl(wifePhotoLink) && (!wifeImageLink || !isValidImageUrl(wifeImageLink))
-            ? await processGoogleDriveUpload(wifePhotoLink, wifeName, couple.wife, "wife")
-            : wifeImageLink;
+            try {
+                const cloudinaryUrl = await uploadFromGoogleDrive(anniversaryPhoto, `anniversary-${husbandName.replace(/\s+/g, '-')}-${wifeName.replace(/\s+/g, '-')}`);
 
-        // Determine which image link to use (prefer husband's if both exist)
-        finalImageUrl = isValidImageUrl(husbandPhotoUrl) ? husbandPhotoUrl :
-            isValidImageUrl(wifePhotoUrl) ? wifePhotoUrl : null;
+                if (cloudinaryUrl) {
+                    finalImageUrl = cloudinaryUrl;
+                    logToFile(`Uploaded Google Drive image to Cloudinary for anniversary ${husbandName} & ${wifeName}`, "SUCCESS");
+                } else {
+                    logToFile(`Failed to upload Google Drive image to Cloudinary for anniversary ${husbandName} & ${wifeName}`, "ERROR");
+                }
+            } catch (error) {
+                logToFile(`Error processing Google Drive upload for anniversary ${husbandName} & ${wifeName}: ${error.message}`, "ERROR");
+            }
+        } else if (isValidImageUrl(anniversaryPhoto)) {
+            finalImageUrl = anniversaryPhoto;
+        }
 
         // Determine template and components based on image availability
         const hasValidImage = isValidImageUrl(finalImageUrl);
@@ -94,31 +98,30 @@ async function sendAnniversaryMessages() {
                 ]
             });
         }
-
+        logToFile(`Components for ${templateName}: ${JSON.stringify(components)}`, "INFO");
         try {
-            const res = await axios.post(
-                process.env.WHATSAPP_API_URL,
-                {
-                    messaging_product: "whatsapp",
-                    to: process.env.RECIPIENT_PHONE_NUMBER,
-                    type: "template",
-                    template: {
-                        name: templateName,
-                        language: { code: "hi" },
-                        components: components,
-                    },
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
+            // const res = await axios.post(
+            //     process.env.WHATSAPP_API_URL,
+            //     {
+            //         messaging_product: "whatsapp",
+            //         to: process.env.RECIPIENT_PHONE_NUMBER,
+            //         type: "template",
+            //         template: {
+            //             name: templateName,
+            //             language: { code: "hi" },
+            //             components: components,
+            //         },
+            //     },
+            //     {
+            //         headers: {
+            //             Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+            //             "Content-Type": "application/json",
+            //         },
+            //     }
+            // );
 
-            const templateType = hasValidImage ? "with image" : "without image";
-            const imageSource = finalImageUrl === husbandImageLink || finalImageUrl === wifeImageLink ? "existing" : "Cloudinary";
-            logToFile(`Anniversary message sent for ${husbandName} & ${wifeName} to ${process.env.RECIPIENT_PHONE_NUMBER} using ${templateType} template - Message ID: ${res.data.messages?.[0]?.id}`, "SUCCESS");
+            // const templateType = hasValidImage ? "with image" : "without image";
+            // logToFile(`Anniversary message sent for ${husbandName} & ${wifeName} to ${process.env.RECIPIENT_PHONE_NUMBER} using ${templateType} template - Message ID: ${res.data.messages?.[0]?.id}`, "SUCCESS");
         } catch (err) {
             const errorMessage = `Failed to send anniversary message for ${husbandName} & ${wifeName}`;
             // Sanitize error message to remove any sensitive data
@@ -129,35 +132,6 @@ async function sendAnniversaryMessages() {
                 logToFile(errorMessage, "ERROR");
             }
         }
-    }
-}
-
-/**
- * Helper function to process Google Drive upload for anniversary messages
- * @param {string} photoLink - Google Drive URL
- * @param {string} fullName - Person's full name
- * @param {object} row - CSV row object to update
- * @param {string} role - "husband" or "wife"
- * @returns {Promise<string|null>} - Cloudinary URL or null
- */
-async function processGoogleDriveUpload(photoLink, fullName, row, role) {
-    logToFile(`Processing Google Drive URL for ${role} ${fullName}: ${photoLink}`, "INFO");
-
-    try {
-        const cloudinaryUrl = await uploadFromGoogleDrive(photoLink, `anniversary-${role}-${fullName.replace(/\s+/g, '-')}`);
-
-        if (cloudinaryUrl) {
-            // Update the row in memory with the new Cloudinary URL
-            row["Image Link"] = cloudinaryUrl;
-            logToFile(`Updated Image Link for ${role} ${fullName} with Cloudinary URL`, "SUCCESS");
-            return cloudinaryUrl;
-        } else {
-            logToFile(`Failed to upload Google Drive image to Cloudinary for ${role} ${fullName}`, "ERROR");
-            return null;
-        }
-    } catch (error) {
-        logToFile(`Error processing Google Drive upload for ${role} ${fullName}: ${error.message}`, "ERROR");
-        return null;
     }
 }
 
