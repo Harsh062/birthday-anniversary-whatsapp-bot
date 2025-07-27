@@ -98,30 +98,30 @@ async function sendAnniversaryMessages() {
                 ]
             });
         }
-        logToFile(`Components for ${templateName}: ${JSON.stringify(components)}`, "INFO");
-        try {
-            // const res = await axios.post(
-            //     process.env.WHATSAPP_API_URL,
-            //     {
-            //         messaging_product: "whatsapp",
-            //         to: process.env.RECIPIENT_PHONE_NUMBER,
-            //         type: "template",
-            //         template: {
-            //             name: templateName,
-            //             language: { code: "hi" },
-            //             components: components,
-            //         },
-            //     },
-            //     {
-            //         headers: {
-            //             Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
-            //             "Content-Type": "application/json",
-            //         },
-            //     }
-            // );
 
-            // const templateType = hasValidImage ? "with image" : "without image";
-            // logToFile(`Anniversary message sent for ${husbandName} & ${wifeName} to ${process.env.RECIPIENT_PHONE_NUMBER} using ${templateType} template - Message ID: ${res.data.messages?.[0]?.id}`, "SUCCESS");
+        try {
+            const res = await axios.post(
+                process.env.WHATSAPP_API_URL,
+                {
+                    messaging_product: "whatsapp",
+                    to: process.env.RECIPIENT_PHONE_NUMBER,
+                    type: "template",
+                    template: {
+                        name: templateName,
+                        language: { code: "hi" },
+                        components: components,
+                    },
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            const templateType = hasValidImage ? "with image" : "without image";
+            logToFile(`Anniversary message sent for ${husbandName} & ${wifeName} to ${process.env.RECIPIENT_PHONE_NUMBER} using ${templateType} template - Message ID: ${res.data.messages?.[0]?.id}`, "SUCCESS");
         } catch (err) {
             const errorMessage = `Failed to send anniversary message for ${husbandName} & ${wifeName}`;
             // Sanitize error message to remove any sensitive data
