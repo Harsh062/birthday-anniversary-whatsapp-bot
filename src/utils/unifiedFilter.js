@@ -33,7 +33,7 @@ function filterTodayBirthdays(rows) {
             todayBirthdays.push({
                 name: row["Husband"],
                 phone: row["Husband Phone"],
-                photoLink: row["Husband Photo"],
+                photoLink: row["Canva HOF Birthday Link"],
                 type: "husband_birthday"
             });
         }
@@ -43,7 +43,7 @@ function filterTodayBirthdays(rows) {
             todayBirthdays.push({
                 name: row["Wife"],
                 phone: row["Wife Phone"],
-                photoLink: row["Wife Photo"],
+                photoLink: row["Canva Wife Birthday Link"],
                 type: "wife_birthday"
             });
         }
