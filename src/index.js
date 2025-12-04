@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 const sendBirthdayMessages = require("./sendBirthdayMessages");
 const sendAnniversaryMessages = require("./sendAnniversaryMessages");
-const { logToFile } = require("./utils/logger");
+const { logToFile } = require("./utils/logger"); 
 
 async function main() {
     try {
