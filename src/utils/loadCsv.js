@@ -43,7 +43,7 @@ async function loadCsv() {
         remoteLink: process.env.BIRTHDAY_ANNIVERSARY_CSV_REMOTE_LINK,
         name: 'birthday_anniversary'
     };
-
+    console.log("config:: ", config);
     try {
         if (isDev) {
             if (!config.localPath) {
