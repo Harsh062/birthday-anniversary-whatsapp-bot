@@ -36,7 +36,7 @@ async function sendBirthdayMessages() {
     }
 
     logToFile(`Found ${todayBirthdays.length} birthdays today`, "INFO");
-
+    console.log("process.env:: ", process.env);
     for (const birthday of todayBirthdays) {
         const fullName = birthday.name;
         const firstName = extractFirstName(fullName);
